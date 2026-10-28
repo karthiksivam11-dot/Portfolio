@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run install:all && npm run build",
+  "outputDirectory": "client/build",
+  "framework": "create-react-app",
+  "installCommand": "npm run install:all",
+  "devCommand": "npm run dev"
+}
