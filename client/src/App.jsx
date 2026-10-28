@@ -15,7 +15,7 @@ import './styles/animations.css';
 import './App.css';
 
 function App() {
-  const [theme, setTheme] = useState(() => {
+  const [theme] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
       if (saved) return saved;
@@ -29,15 +29,11 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
-
   return (
     <div className="app">
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
-      <Header onThemeToggle={toggleTheme} theme={theme} />
+      <Header theme={theme} />
 
       <main id="main-content" role="main">
         <Hero />

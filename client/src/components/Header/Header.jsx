@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Header.css';
 
-const Header = ({ onThemeToggle, theme }) => {
+const Header = ({ theme }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const toggleRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,6 +50,44 @@ const Header = ({ onThemeToggle, theme }) => {
     { id: 'contact', label: 'Contact' }
   ];
 
+  // Theme toggle with View Transition API
+  const handleThemeToggle = useCallback(() => {
+    const isDark = theme === 'light'; // Will switch to opposite
+    const toggleElement = toggleRef.current;
+
+    // Calculate transition origin from toggle position
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+
+    if (toggleElement) {
+      const rect = toggleElement.getBoundingClientRect();
+      x = rect.left + rect.width / 2;
+      y = rect.top + rect.height / 2;
+    }
+
+    // Set CSS custom properties for view transition origin
+    document.documentElement.style.setProperty('--vt-x', `${x}px`);
+    document.documentElement.style.setProperty('--vt-y', `${y}px`);
+
+    // Apply theme change with View Transition API if supported
+    const applyThemeChange = () => {
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    };
+
+    if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const transition = document.startViewTransition(applyThemeChange);
+
+      // Optional: Handle transition completion
+      transition.finished.catch(() => {
+        // Ignore aborted transitions
+      });
+    } else {
+      // Fallback for browsers without View Transition API
+      applyThemeChange();
+    }
+  }, [theme]);
+
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''} ${mobileMenuOpen ? 'menu-open' : ''}`} role="banner">
       <div className="header-bg" aria-hidden="true"></div>
@@ -83,31 +122,15 @@ const Header = ({ onThemeToggle, theme }) => {
         {/* Actions */}
         <div className="header-actions">
           <button
+            ref={toggleRef}
             className="theme-toggle"
-            onClick={onThemeToggle}
+            onClick={handleThemeToggle}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-pressed={theme === 'dark'}
             type="button"
           >
-            <span className="theme-toggle-track" aria-hidden="true">
-              <span className="theme-toggle-thumb">
-                {/* Sun Icon - visible in dark mode */}
-                <svg className="theme-icon sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-                {/* Moon Icon - visible in light mode */}
-                <svg className="theme-icon moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-              </span>
+            <span className="theme-toggle-orb" aria-hidden="true">
+              <span className="theme-toggle-inner"></span>
             </span>
             <span className="theme-toggle-sr-only" aria-hidden="false">
               {theme === 'dark' ? 'Dark mode active, click to switch to light mode' : 'Light mode active, click to switch to dark mode'}
