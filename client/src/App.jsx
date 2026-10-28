@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header/Header';
 import Hero from './components/Hero/Hero';
 import About from './components/About/About';
@@ -15,7 +15,7 @@ import './styles/animations.css';
 import './App.css';
 
 function App() {
-  const [theme] = useState(() => {
+  const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
       if (saved) return saved;
@@ -23,6 +23,10 @@ function App() {
     }
     return 'dark';
   });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -33,7 +37,7 @@ function App() {
     <div className="app">
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
-      <Header theme={theme} />
+      <Header theme={theme} onThemeToggle={toggleTheme} />
 
       <main id="main-content" role="main">
         <Hero />

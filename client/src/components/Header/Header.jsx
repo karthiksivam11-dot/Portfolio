@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Header.css';
 
-const Header = ({ theme }) => {
+const Header = ({ theme, onThemeToggle }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
@@ -52,6 +52,11 @@ const Header = ({ theme }) => {
 
   // Theme toggle with View Transition API
   const handleThemeToggle = useCallback(() => {
+    // Call the parent callback to update React state
+    if (onThemeToggle) {
+      onThemeToggle();
+    }
+
     const isDark = theme === 'light'; // Will switch to opposite
     const toggleElement = toggleRef.current;
 
@@ -86,7 +91,7 @@ const Header = ({ theme }) => {
       // Fallback for browsers without View Transition API
       applyThemeChange();
     }
-  }, [theme]);
+  }, [theme, onThemeToggle]);
 
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''} ${mobileMenuOpen ? 'menu-open' : ''}`} role="banner">
